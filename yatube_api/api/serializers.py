@@ -9,8 +9,15 @@ class PostSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        fields = '__all__'
         model = Post
+        fields = (
+            'id',
+            'text',
+            'group',
+            'image',
+            'author',
+            'pub_date'
+        )
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -22,14 +29,25 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
         model = Comment
+        fields = (
+            'id',
+            'author',
+            'post',
+            'text',
+            'created'
+        )
 
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = '__all__'
         model = Group
+        fields = (
+            'id',
+            'title',
+            'slug',
+            'description'
+        )
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -42,16 +60,9 @@ class FollowSerializer(serializers.ModelSerializer):
         slug_field='username',
     )
 
-    def validate_following(self, following):
-        if self.context['request'].user == following:
-            raise serializers.ValidationError(
-                'Вы не можете подписаться на себя'
-            )
-        return following
-
     class Meta:
         model = Follow
-        fields = '__all__'
+        fields = ('user', 'following')
         validators = (
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
@@ -59,3 +70,10 @@ class FollowSerializer(serializers.ModelSerializer):
                 message='Вы подписаны на пользователя',
             ),
         )
+
+    def validate_following(self, following):
+        if self.context['request'].user == following:
+            raise serializers.ValidationError(
+                'Вы не можете подписаться на себя'
+            )
+        return following
